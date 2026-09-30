@@ -1,0 +1,111 @@
+import random
+import time
+
+def find_max(numbers):
+    largest = numbers[0]
+
+    for number in numbers:
+        if number > largest:
+            largest = number
+
+    return largest
+
+def iterative_max(numbers, k):
+    data = numbers.copy()
+
+    for i in range(k):
+        largest = find_max(data)
+        data.remove(largest)
+
+    return largest
+
+def sort_based(numbers, k):
+    data = numbers.copy()
+    data.sort()
+
+    return data[len(data) - k]
+
+def median_of_medians(numbers, k):
+
+    if len(numbers) <= 5:
+        data = sorted(numbers, reverse=True)
+        return data[k - 1]
+
+    groups = []
+
+    for i in range(0, len(numbers), 5):
+        groups.append(numbers[i:i + 5])
+
+    medians = []
+
+    for group in groups:
+        group.sort()
+        medians.append(group[len(group) // 2])
+
+    pivot = median_of_medians(medians, (len(medians) + 1) // 2)
+
+    greater = []
+    equal = []
+    less = []
+
+    for number in numbers:
+        if number > pivot:
+            greater.append(number)
+        elif number == pivot:
+            equal.append(number)
+        else:
+            less.append(number)
+
+    if k <= len(greater):
+        return median_of_medians(greater, k)
+
+    elif k <= len(greater) + len(equal):
+        return pivot
+
+    else:
+        new_k = k - len(greater) - len(equal)
+        return median_of_medians(less, new_k)
+
+numbers = [3, 9, 1, 7, 5, 12, 20, 8]
+k = 3
+
+print("Numbers:", numbers)
+print("k =", k)
+
+print("Iterative-Max:", iterative_max(numbers, k))
+print("Sort-Based:", sort_based(numbers, k))
+print("Median-of-Medians:", median_of_medians(numbers, k))
+
+sizes = [100, 500, 1000, 5000]
+k_values = [1, 10, 50]
+
+print("\nRUNNING TIMES")
+
+for n in sizes:
+
+    numbers = [random.randint(1, 1000000) for _ in range(n)]
+
+    for k in k_values:
+
+        if k > n:
+            continue
+
+        start = time.perf_counter()
+        iterative_max(numbers, k)
+        iterative_time = time.perf_counter() - start
+
+        start = time.perf_counter()
+        sort_based(numbers, k)
+        sort_time = time.perf_counter() - start
+
+        start = time.perf_counter()
+        median_of_medians(numbers, k)
+        median_time = time.perf_counter() - start
+
+        print(
+    "n =", n,
+    "k =", k,
+    "| Iterative-Max:", f"{iterative_time:.6f}",
+    "| Sort:", f"{sort_time:.6f}",
+    "| Median-of-Medians:", f"{median_time:.6f}"
+)
